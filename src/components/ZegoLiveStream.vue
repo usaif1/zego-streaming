@@ -3,7 +3,7 @@ import { onMounted, ref, computed } from 'vue';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
 const rootElement = ref<HTMLElement | null>(null);
-const role = ref<'Host' | 'Audience'>('Host'); // Default role is Host
+const role = ref(ZegoUIKitPrebuilt.Host); // Use static enum property
 const roomID = ref('fuelbuddyRoom');
 const showCopiedMessage = ref(false);
 
@@ -28,7 +28,7 @@ const copyLinkToClipboard = () => {
 };
 
 const toggleRole = () => {
-  role.value = role.value === 'Host' ? 'Audience' : 'Host';
+  role.value = role.value === ZegoUIKitPrebuilt.Host ? ZegoUIKitPrebuilt.Audience : ZegoUIKitPrebuilt.Host;
   joinRoom();
 };
 
@@ -38,14 +38,16 @@ const joinRoom = () => {
   // Check URL parameters for room and role
   const urlParams = new URLSearchParams(window.location.search);
   const roomParam = urlParams.get('room');
-  const roleParam = urlParams.get('role') as 'Host' | 'Audience' | null;
+  const roleParam = urlParams.get('role');
   
   if (roomParam) {
     roomID.value = roomParam;
   }
   
-  if (roleParam && (roleParam === 'Host' || roleParam === 'Audience')) {
-    role.value = roleParam;
+  if (roleParam === 'Host') {
+    role.value = ZegoUIKitPrebuilt.Host;
+  } else if (roleParam === 'Audience') {
+    role.value = ZegoUIKitPrebuilt.Audience;
   }
   
   const userID = String(Math.floor(Math.random() * 10000));
@@ -69,14 +71,14 @@ const joinRoom = () => {
   // Join room with appropriate role
   zp.joinRoom({
     container: rootElement.value,
-    turnOnCameraWhenJoining: role.value === 'Host',
-    showMyCameraToggleButton: role.value === 'Host',
-    showAudioVideoSettingsButton: role.value === 'Host',
+    turnOnCameraWhenJoining: role.value === ZegoUIKitPrebuilt.Host,
+    showMyCameraToggleButton: role.value === ZegoUIKitPrebuilt.Host,
+    showAudioVideoSettingsButton: role.value === ZegoUIKitPrebuilt.Host,
     showScreenSharingButton: false,
     showTextChat: false,
     showUserList: false,
     scenario: {
-      mode: "LiveStreaming",
+      mode: ZegoUIKitPrebuilt.LiveStreaming,
       config: {
         role: role.value,
       },
@@ -92,13 +94,13 @@ onMounted(() => {
 <template>
   <div>
     <div class="role-selector">
-      <h1>FuelBuddy Live Streaming - {{ role }} Mode</h1>
+      <h1>FuelBuddy Live Streaming - {{ role === ZegoUIKitPrebuilt.Host ? 'Host' : 'Viewer' }} Mode</h1>
       <div class="controls">
         <button @click="toggleRole" class="role-toggle">
-          Switch to {{ role === 'Host' ? 'Viewer' : 'Host' }} Mode
+          Switch to {{ role === ZegoUIKitPrebuilt.Host ? 'Viewer' : 'Host' }} Mode
         </button>
         
-        <div v-if="role === 'Host'" class="share-section">
+        <div v-if="role === ZegoUIKitPrebuilt.Host" class="share-section">
           <input type="text" readonly :value="shareableLink" class="share-link" />
           <button @click="copyLinkToClipboard" class="copy-button">
             {{ showCopiedMessage ? 'Copied!' : 'Copy Viewer Link' }}
